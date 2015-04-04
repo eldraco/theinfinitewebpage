@@ -20,6 +20,30 @@ import BaseHTTPServer
 import gzip
 import SocketServer
 import time
+import curses
+#from signal import signal, SIGPIPE, SIG_DFL, SIG_IGN
+#signal(SIGPIPE,SIG_DFL) 
+
+# Global pos
+y_pos = 0
+clients = {}
+# Initialize the curses
+stdscr = curses.initscr()
+curses.start_color()
+curses.use_default_colors()
+new_screen = stdscr
+curses.init_pair(1, curses.COLOR_GREEN, -1)
+curses.init_pair(2, curses.COLOR_RED, -1)
+curses.init_pair(3, curses.COLOR_CYAN, -1)
+curses.init_pair(4, curses.COLOR_WHITE, -1)
+stdscr.bkgd(' ')
+curses.noecho()
+curses.cbreak()
+new_screen.keypad(1)
+curses.curs_set(0)
+new_screen.addstr(0,0, 'Live Log')
+screen = new_screen
+
 
 class ChunkingHTTPServer(SocketServer.ThreadingMixIn,
                         BaseHTTPServer.HTTPServer):
@@ -62,6 +86,7 @@ class ListBuffer(object):
         return data
 
 class ChunkingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    global y_pos
     '''
     Nothing is terribly magical about this code, the only thing that you need
     to really do is tell the client that you're going to be using a chunked
@@ -73,20 +98,24 @@ class ChunkingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     ALWAYS_SEND_SOME = False
     ALLOW_GZIP = False
     protocol_version = 'HTTP/1.1'
+    #(y_max, x_max) = self.screen.getmaxyx()
+
     def do_GET(self):
-        ae = self.headers.get('accept-encoding') or ''
-        use_gzip = 'gzip' in ae and self.ALLOW_GZIP
+        global y_pos
+        # Store the new client with its address
+        clients[self.client_address] = y_pos
+
+        screen.addstr(clients[self.client_address],0,self.path+": "+self.client_address[0])
+        y_pos += 1
+        screen.refresh()
+
+        #ae = self.headers.get('accept-encoding') or ''
 
         # send some headers
         self.send_response(200)
         self.send_header('Transfer-Encoding', 'chunked')
         self.send_header('Content-type', 'text/plain')
 
-        # use gzip as requested
-        if use_gzip:
-            self.send_header('Content-Encoding', 'gzip')
-            buffer = ListBuffer()
-            output = gzip.GzipFile(mode='wb', fileobj=buffer)
 
         self.end_headers()
 
@@ -95,47 +124,37 @@ class ChunkingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.wfile.write(tosend)
 
         # get some chunks
-        for chunk in chunk_generator():
+        for chunk in chunk_generator(self.client_address):
             if not chunk:
                 continue
-
-            # we've got to compress the chunk
-            if use_gzip:
-                output.write(chunk)
-                # we'll force some output from gzip if necessary
-                if self.ALWAYS_SEND_SOME and not buffer:
-                    output.flush()
-                chunk = buffer.getvalue()
-
-                # not forced, and gzip isn't ready to produce
-                if not chunk:
-                    continue
 
             write_chunk()
 
         # no more chunks!
 
-        if use_gzip:
-            # force the ending of the gzip stream
-            output.close()
-            chunk = buffer.getvalue()
-            if chunk:
-                write_chunk()
-
         # send the chunked trailer
         self.wfile.write('0\r\n\r\n')
 
-def chunk_generator():
+def chunk_generator(client):
+    global clients
+    import datetime
     # generate some chunks
     #for i in xrange(10):
+    amount = 0
     while True:
         i = "<html>"
         i += "TheInfiniteWebsite" * 20000
+        amount += len(i)
         time.sleep(.1)
-        yield "%s\r\n"%i
+        try:
+            yield "%s\r\n"%i
+            screen.addstr(clients[client],80,"Amount sent: "+str(amount/1024/1024)+" MB")
+            screen.refresh()
+        except:
+            screen.addstr(clients[client],110,"Ended: "+str(datetime.datetime.now()))
+            screen.refresh()
 
 if __name__ == '__main__':
-    server = ChunkingHTTPServer(
-        ('0.0.0.0', 8080), ChunkingRequestHandler)
+    server = ChunkingHTTPServer( ('0.0.0.0', 8080), ChunkingRequestHandler)
     print 'Starting server, use <Ctrl-C> to stop'
     server.serve_forever()
