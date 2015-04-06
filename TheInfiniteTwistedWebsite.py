@@ -1,56 +1,11 @@
 #!/usr/bin/env python
-
-from twisted.web.server import Site # An IProtocolFactory wich glues a listening server port to the HTTPChannel. A web site, manage log, resources and sessions
 from twisted.internet import reactor # drives the whole process, accepting TCP connections and moving bytes
-from twisted.web.resource import Resource
-from twisted.web.server import NOT_DONE_YET
 from twisted.internet import defer
 from twisted.web import http
 from twisted.internet import protocol
 
 import datetime
-
-
-
-class Infinite(Resource):
-    def __init__(self):
-        self.clients = {}
-
-    class cli():
-        def __init__(self):
-            self.connectionTime = -1
-            self.disconnectionTime = -1
-            self.amountTransfered = -1
-
-    isLeaf = True
-
-
-    def _responseFailed(self, err, request):
-        disconnect_time = datetime.datetime.now()
-        print 'Client disconnected: {}. Duration: {}. Transfered: {} MB'.format(request.client, disconnect_time - self.clients[request.client].connectionTime, self.clients[request.client].amountTransfered/1024/1024.0)
-
-    def render_GET(self, request):
-        # Call back for when the client disconnects
-        request.notifyFinish().addErrback(self._responseFailed, request)
-        # New cli object
-        newcli = self.cli()
-        newcli.connectionTime = datetime.datetime.now()
-        toTransfer = 'A'*1024
-        newcli.amountTransfered = len(toTransfer)
-        # Store the cli
-        self.clients[request.client] = newcli
-        print 'Client connected: {} on {}'.format(request.client, self.clients[request.client].connectionTime)
-        # Write some data
-        for i in range(0,1048576):
-            request.write(toTransfer)
-        return NOT_DONE_YET
-    
-
-
-#resource = Infinite()
-#factory = Site(resource) # Bind them to the site
-#reactor.listenTCP(8000, factory) # Listen in this port
-#reactor.run()
+import curses
 
 clients = {}
 
@@ -59,6 +14,29 @@ class cli():
         self.connectionTime = -1
         self.disconnectionTime = -1
         self.amountTransfered = 0
+        self.y_pos = -1
+
+# Global pos
+y_pos = 0
+clients = {}
+
+# Initialize the curses       
+stdscr = curses.initscr()
+curses.start_color()
+curses.use_default_colors()
+new_screen = stdscr
+curses.init_pair(1, curses.COLOR_GREEN, -1)
+curses.init_pair(2, curses.COLOR_RED, -1)
+curses.init_pair(3, curses.COLOR_CYAN, -1)
+curses.init_pair(4, curses.COLOR_WHITE, -1)
+stdscr.bkgd(' ')
+curses.noecho()
+curses.cbreak()
+new_screen.keypad(1)
+curses.curs_set(0)
+new_screen.addstr(0,0, 'Live Log')
+screen = new_screen
+
 
 #####################
 def wait(seconds, result=None):
@@ -68,27 +46,41 @@ def wait(seconds, result=None):
     return d
 
 class StreamHandler(http.Request):
+    global y_pos
+    global clients
 
     @defer.inlineCallbacks
     def process(self):
+        global y_pos
+        global clients
         newcli = cli()
         newcli.connectionTime = datetime.datetime.now()
         clients[http.Request.getClientIP(self)] = newcli
-        #print dir(http.Request)
+        clients[http.Request.getClientIP(self)].y_pos = y_pos
+        y_pos += 1
+
         useragent = http.Request.getAllHeaders(self)['user-agent']
-        print 'Client connected: {} on {}. User-Agent: {}'.format(http.Request.getClientIP(self), clients[http.Request.getClientIP(self)].connectionTime, useragent)
+        # Print
+        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,0, "Client "+http.Request.getClientIP(self)+' connected at '+str(clients[http.Request.getClientIP(self)].connectionTime)+'. User-Agent: '+useragent)
+        screen.refresh()
         while True:
             self.setHeader('Connection', 'Keep-Alive')
             self.setHeader('Content-Type', "multipart/x-mixed-replace")
             self.write("Content-Type: text/html\n")
             s = "A"*1024
             newcli.amountTransfered += len(s)
+            # For some reason the connection is not stopped and continues to try to send data
+            #screen.addstr(clients[http.Request.getClientIP(self)].y_pos,100, "Transfered "+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
+            #screen.refresh()
             self.write(s)
             yield wait(0)
 
     def connectionLost(self,reason):
+        global clients
         disconnect_time = datetime.datetime.now()
-        print 'Client disconnected: {}. Duration: {}. Transfered: {:.2f} MB'.format(http.Request.getClientIP(self), disconnect_time - clients[http.Request.getClientIP(self)].connectionTime, clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)
+        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,120, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime)+'. Transfered: '+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
+        screen.refresh()
+        return True
 
 
 class StreamProtocol(http.HTTPChannel):
@@ -99,5 +91,3 @@ class StreamFactory(http.HTTPFactory):
 
 reactor.listenTCP(8800, StreamFactory())
 reactor.run()
-
-
