@@ -63,7 +63,7 @@ class StreamHandler(http.Request):
 
         useragent = http.Request.getAllHeaders(self)['user-agent']
         # Print
-        screen.addstr(clients[self.client].y_pos,0, "Client "+str(self.client.host)+':'+str(self.client.port)+'. '+str(clients[self.client].connectionTime)+' '+str(self.method)+' '+str(self.uri)+'. UA: '+useragent)
+        screen.addstr(clients[self.client].y_pos,0, "Client "+str(self.client.host)+':'+str(self.client.port)+'. '+str(clients[self.client].connectionTime)+' '+str(self.method)+' '+str(self.uri)+' UA: '+useragent)
         #screen.addstr(10,0,http.Request.uri)
         #screen.addstr(11,0,str(http.Request.path))
         #screen.addstr(12,0,str(http.Request.getAllHeaders(self)))
