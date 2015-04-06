@@ -61,15 +61,8 @@ class StreamHandler(http.Request):
 
         useragent = http.Request.getAllHeaders(self)['user-agent']
         # Print
-        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,0, "Client "+http.Request.getClientIP(self)+' connected at '+str(clients[http.Request.getClientIP(self)].connectionTime)+'. User-Agent: '+useragent)
+        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,0, "Client "+http.Request.getClientIP(self)+'. '+str(clients[http.Request.getClientIP(self)].connectionTime)+'. User-Agent: '+useragent)
         screen.refresh()
-        # http.HTTPChannel
-        # ['MAX_LENGTH', '_HTTPChannel__content', '_HTTPChannel__first_line', '_HTTPChannel__header', '_TimeoutMixin__timedOut', '_TimeoutMixin__timeoutCall', '__doc__', '__implemented__', '__init__', '__module__', '__providedBy__', '__provides__', '_buffer', '_busyReceiving', '_finishRequestBody', '_receivedHeaderCount', '_savedTimeOut', 'allContentReceived', 'allHeadersReceived', 'callLater', 'checkPersistence', 'clearLineBuffer', 'connected', 'connectionLost', 'connectionMade', 'dataReceived', 'delimiter', 'headerReceived', 'length', 'lineLengthExceeded', 'lineReceived', 'line_mode', 'logPrefix', 'makeConnection', 'maxHeaders', 'pauseProducing', 'paused', 'persistent', 'rawDataReceived', 'requestDone', 'requestFactory', 'resetTimeout', 'resumeProducing', 'sendLine', 'setLineMode', 'setRawMode', 'setTimeout', 'stopProducing', 'timeOut', 'timeoutConnection', 'transport']
-
-
-
-        # http.Request
-        # ['__doc__', '__implemented__', '__init__', '__module__', '__providedBy__', '__provides__', '__repr__', '__setattr__', '_authorize', '_cleanup', '_disconnected', '_forceSSL', '_warnHeaders', 'addCookie', 'args', 'chunked', 'clientproto', 'code', 'code_message', 'connectionLost', 'content', 'etag', 'finish', 'finished', 'getAllHeaders', 'getClient', 'getClientIP', 'getCookie', 'getHeader', 'getHost', 'getPassword', 'getRequestHostname', 'getUser', 'gotLength', 'handleContentChunk', 'headers', 'isSecure', 'lastModified', 'method', 'noLongerQueued', 'notifyFinish', 'parseCookies', 'path', 'process', 'producer', 'received_headers', 'redirect', 'registerProducer', 'requestReceived', 'sentLength', 'setETag', 'setHeader', 'setHost', 'setLastModified', 'setResponseCode', 'startedWriting', 'unregisterProducer', 'uri', 'write']
 
 
         while not http.Request.finished:
@@ -77,8 +70,8 @@ class StreamHandler(http.Request):
                 s = "A"*1024
                 newcli.amountTransfered += len(s)
                 # For some reason the connection is not stopped and continues to try to send data
-                #screen.addstr(clients[http.Request.getClientIP(self)].y_pos,100, "Transfered "+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
-                #screen.refresh()
+                screen.addstr(clients[http.Request.getClientIP(self)].y_pos,130, "Transfered "+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
+                screen.refresh()
                 try:
                     self.write(s)
                     yield wait(0)
@@ -88,7 +81,8 @@ class StreamHandler(http.Request):
     def connectionLost(self,reason):
         global clients
         disconnect_time = datetime.datetime.now()
-        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,120, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime)+'. Transfered: '+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
+        #screen.addstr(clients[http.Request.getClientIP(self)].y_pos,140, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime)+'. Total: '+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
+        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,160, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime))
         screen.refresh()
         http.Request.notifyFinish(self)
         http.Request.finish(self)
