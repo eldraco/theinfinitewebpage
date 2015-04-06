@@ -31,4 +31,4 @@ You can change the port where the infinite web site is running by modifying the 
 
 # Screenshots
 
-![Screenshot1](theinfinitewebsite-1.png "Screenshot1")
+![Screenshot1](theinfinitewebsite-2.png "Screenshot1")
