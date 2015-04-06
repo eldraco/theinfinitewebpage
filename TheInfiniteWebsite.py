@@ -56,22 +56,29 @@ class StreamHandler(http.Request):
         global clients
         newcli = cli()
         newcli.connectionTime = datetime.datetime.now()
-        clients[http.Request.getClientIP(self)] = newcli
-        clients[http.Request.getClientIP(self)].y_pos = y_pos
+        clients[self.client] = newcli
+        clients[self.client].y_pos = y_pos
         y_pos += 1
 
         useragent = http.Request.getAllHeaders(self)['user-agent']
         # Print
-        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,0, "Client "+http.Request.getClientIP(self)+'. '+str(clients[http.Request.getClientIP(self)].connectionTime)+'. User-Agent: '+useragent)
-        screen.refresh()
+        screen.addstr(clients[self.client].y_pos,0, "Client "+str(self.client.host)+':'+str(self.client.port)+'. '+str(clients[self.client].connectionTime)+' Path '+str(http.Request.path)+'. User-Agent: '+useragent)
+        #screen.addstr(10,0,http.Request.uri)
+        #screen.addstr(11,0,str(http.Request.path))
+        #screen.addstr(12,0,str(http.Request.getAllHeaders(self)))
+        #self.method
+        #['__doc__', '__implemented__', '__init__', '__module__', '__providedBy__', '__provides__', '__repr__', '__setattr__', '_authorize', '_cleanup', '_disconnected', '_forceSSL', '_warnHeaders', 'a ddCookie', 'args', 'channel', 'chunked', 'client', 'clientproto', 'code', 'code_message', 'connectionLost', 'content', 'cookies', 'etag', 'finish', 'finished', 'getAllHeaders', 'getClient', 'g etClientIP', 'getCookie', 'getHeader', 'getHost', 'getPassword', 'getRequestHostname', 'getUser', 'gotLength', 'handleContentChunk', 'headers', 'host', 'isSecure', 'lastModified', 'method', 'n oLongerQueued', 'notifications', 'notifyFinish', 'parseCookies', 'path', 'process', 'producer', 'queued', 'received_cookies', 'received_headers', 'redirect', 'registerProducer', 'requestHeader s', 'requestReceived', 'responseHeaders', 'sentLength', 'setETag', 'setHeader', 'setHost', 'setLastModified', 'setResponseCode', 'startedWriting', 'transport', 'unregisterProducer', 'uri', 'wr ite']
 
+        #screen.addstr(13,0,str(self.client.port))
+
+        screen.refresh()
 
         while not http.Request.finished:
                 self.setHeader('Connection', 'Keep-Alive')
                 s = "A"*1024
                 newcli.amountTransfered += len(s)
                 # For some reason the connection is not stopped and continues to try to send data
-                screen.addstr(clients[http.Request.getClientIP(self)].y_pos,130, "Transfered "+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
+                screen.addstr(clients[self.client].y_pos,130, "Transfered {:>5.3f} MB".format(clients[self.client].amountTransfered/1024/1024.0))
                 screen.refresh()
                 try:
                     self.write(s)
@@ -83,7 +90,7 @@ class StreamHandler(http.Request):
         global clients
         disconnect_time = datetime.datetime.now()
         #screen.addstr(clients[http.Request.getClientIP(self)].y_pos,140, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime)+'. Total: '+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
-        screen.addstr(clients[http.Request.getClientIP(self)].y_pos,160, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime))
+        screen.addstr(clients[self.client].y_pos,160, "Duration "+str(disconnect_time - clients[self.client].connectionTime))
         screen.refresh()
         http.Request.notifyFinish(self)
         http.Request.finish(self)
