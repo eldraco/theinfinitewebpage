@@ -8,10 +8,23 @@ from twisted.web.server import NOT_DONE_YET
 import datetime
 import curses
 import logging
+import argparse
+
+# config of the log
 logging.basicConfig(filename='theinfinitewebsite.log',level=logging.INFO,format='%(asctime)s %(message)s')
 
-clients = {}
 
+# Arg parser
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--port', help='Port where the webserver should listen.', action='store', required=False, type=int, default=8800)
+args = parser.parse_args()
+
+if args.port:
+    port = args.port
+
+
+
+# Global Class. Oh my.
 class cli():
     def __init__(self):
         self.connectionTime = -1
@@ -19,7 +32,8 @@ class cli():
         self.amountTransfered = 0
         self.y_pos = -1
 
-# Global pos
+
+# Global variables. YES GLOBAL
 y_pos = 1
 clients = {}
 
@@ -120,7 +134,7 @@ class StreamProtocol(http.HTTPChannel):
 class StreamFactory(http.HTTPFactory):
     protocol = StreamProtocol
 
-port=8800
+# Port is given by command parameter or defaults to 8800
 reactor.listenTCP(port, StreamFactory())
 logging.info('Listening on port {}'.format(port))
 reactor.run()
