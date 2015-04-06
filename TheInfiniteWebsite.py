@@ -81,7 +81,7 @@ class StreamHandler(http.Request):
                     s = "A"*1024
                     newcli.amountTransfered += len(s)
                     # For some reason the connection is not stopped and continues to try to send data
-                    screen.addstr(clients[self.client].y_pos,180, "Data {:>5.3f} MB".format(clients[self.client].amountTransfered/1024/1024.0))
+                    screen.addstr(clients[self.client].y_pos,180, "Data {:>5.3f} MB".format(clients[self.client].amountTransfered/1024/1024.0), curses.color_pair(3))
                     screen.refresh()
                     try:
                         self.write(s)
@@ -98,7 +98,7 @@ class StreamHandler(http.Request):
         disconnect_time = datetime.datetime.now()
         #screen.addstr(clients[http.Request.getClientIP(self)].y_pos,140, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime)+'. Total: '+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
         try:
-            screen.addstr(clients[self.client].y_pos,195, "Duration "+str(disconnect_time - clients[self.client].connectionTime))
+            screen.addstr(clients[self.client].y_pos,200, "Duration "+str(disconnect_time - clients[self.client].connectionTime),curses.color_pair(2) )
             screen.refresh()
         except:
             print
