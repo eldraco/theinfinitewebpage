@@ -10,8 +10,12 @@ The new features are:
 - It uses the curses libraries to show the amount of data transfered in real time.
 - It can recognize GET and POST requests and give them a lot of data while trying to leave them _stuck_.
 - It can recognize HEAD requests and _stuck_ them also. HEAD requests do not download data, but they can wait a long time.
+- It logs everything in a file.
+- The port number can be specified by a parameter.
 
 When a client connects, the Infinite Web Server shows you its IP, its User-Agent, the requested method, the requested Path, the connection time and the real live information about the data transfered. When that client disconnects, it prints the duration of the connection.
+
+We strongly suggest that you limit the bandwith of this honeypot, because it can eat it. Another hack can be to send less data in the code.
 
 ## Usage
 Just be sure to use a wide console. If necessary make your font smaller a couple of times.
