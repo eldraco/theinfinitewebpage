@@ -7,6 +7,8 @@ from twisted.web.server import NOT_DONE_YET
 
 import datetime
 import curses
+import logging
+logging.basicConfig(filename='theinfinitewebsite.log',level=logging.INFO,format='%(asctime)s %(message)s')
 
 clients = {}
 
@@ -59,18 +61,19 @@ class StreamHandler(http.Request):
         newcli.connectionTime = datetime.datetime.now()
         clients[self.client] = newcli
         clients[self.client].y_pos = y_pos
+        logging.info('New Client connected from {}:{}'.format(self.client.host, self.client.port))
         y_pos += 1
         try:
             useragent = http.Request.getAllHeaders(self)['user-agent']
+            short_useragent = useragent[0:20]
         except:
             useragent = "Empty"
+            short_useragent = "Empty"
+        logging.info('Client {}:{}. User-Agent: {}'.format(self.client.host, self.client.port, useragent))
+        logging.info('Client {}:{}. Method: {}'.format(self.client.host, self.client.port, str(self.method)))
+        logging.info('Client {}:{}. Path: {}'.format(self.client.host, self.client.port, str(self.uri)))
         # Print
-        screen.addstr(clients[self.client].y_pos,0, "Client "+str(self.client.host)+':'+str(self.client.port)+'. '+str(clients[self.client].connectionTime)+' '+str(self.method)+' '+str(self.uri)+' UA: '+useragent)
-        #screen.addstr(10,0,http.Request.uri)
-        #screen.addstr(11,0,str(http.Request.path))
-        #screen.addstr(12,0,str(http.Request.getAllHeaders(self)))
-        #self.method
-        #['__doc__', '__implemented__', '__init__', '__module__', '__providedBy__', '__provides__', '__repr__', '__setattr__', '_authorize', '_cleanup', '_disconnected', '_forceSSL', '_warnHeaders', 'a ddCookie', 'args', 'channel', 'chunked', 'client', 'clientproto', 'code', 'code_message', 'connectionLost', 'content', 'cookies', 'etag', 'finish', 'finished', 'getAllHeaders', 'getClient', 'g etClientIP', 'getCookie', 'getHeader', 'getHost', 'getPassword', 'getRequestHostname', 'getUser', 'gotLength', 'handleContentChunk', 'headers', 'host', 'isSecure', 'lastModified', 'method', 'n oLongerQueued', 'notifications', 'notifyFinish', 'parseCookies', 'path', 'process', 'producer', 'queued', 'received_cookies', 'received_headers', 'redirect', 'registerProducer', 'requestHeader s', 'requestReceived', 'responseHeaders', 'sentLength', 'setETag', 'setHeader', 'setHost', 'setLastModified', 'setResponseCode', 'startedWriting', 'transport', 'unregisterProducer', 'uri', 'wr ite']
+        screen.addstr(clients[self.client].y_pos,0, "Client "+str(self.client.host)+':'+str(self.client.port)+'. '+str(clients[self.client].connectionTime)+' '+str(self.method)+' '+str(self.uri)+' UA: '+short_useragent)
 
         #screen.addstr(13,0,str(self.uri))
         screen.refresh()
@@ -99,7 +102,9 @@ class StreamHandler(http.Request):
         global clients
         disconnect_time = datetime.datetime.now()
         #screen.addstr(clients[http.Request.getClientIP(self)].y_pos,140, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime)+'. Total: '+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
+        logging.info('Client {}:{}. Finished connection. Total Transfer: {:.3f} MB, Duration: {}'.format(self.client.host, self.client.port, clients[self.client].amountTransfered/1024/1024.0, str(disconnect_time - clients[self.client].connectionTime)))
         try:
+            #logging.info('Client {}:{}. Finished connection. Total Transfer: {}, Duration: {}'.format(self.client.host, self.client.port, str(), clients[self.client].amountTransfered/1024/1024.0),str(disconnect_time - clients[self.client].connectionTime))
             screen.addstr(clients[self.client].y_pos,200, "Duration "+str(disconnect_time - clients[self.client].connectionTime),curses.color_pair(2) )
             screen.refresh()
         except:
@@ -115,5 +120,7 @@ class StreamProtocol(http.HTTPChannel):
 class StreamFactory(http.HTTPFactory):
     protocol = StreamProtocol
 
-reactor.listenTCP(8800, StreamFactory())
+port=8800
+reactor.listenTCP(port, StreamFactory())
+logging.info('Listening on port {}'.format(port))
 reactor.run()
