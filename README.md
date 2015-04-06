@@ -1,23 +1,26 @@
 # The Infinite Web Server Honeypot
 
-This is a quick honeypot web server that delivers an infinite web page to anyone asking for it. It sends a never ending web page that may fill up the hard disk of the attacker if the download is automatic.
+This is a quick honeypot web server that delivers an infinite web page to anyone asking anything from it. It sends a never ending web page that may fill up the hard disk of the attacker if the download is automatic. Also has some _sticky_ properties to try to capture the browser for as long as possible.
 
 The new version is designed to work as a web LaBrea honyepot. 
 
 The new features are:
 - It now uses the twisted libraries, so it supports multiple clients.
 - It uses the curses libraries to show the amount of data transfered in real time.
+- It can recognize GET and POST requests and give them a lot of data while trying to leave them _stuck_.
+- It can recognize HEAD requests and _stuck_ them also. HEAD requests do not download data, but they can wait a long time.
 
-When a client connects you can see its IP, its User-Agent, the connection time and the real live information about the data transfered. When that client disconnects, it prints the total  duration of the connection.
+When a client connects, the Infinite Web Server shows you its IP, its User-Agent, the requested method, the requested Path, the connection time and the real live information about the data transfered. When that client disconnects, it prints the duration of the connection.
 
 ## Usage
-Start the infinite web page
+Just be sure to use a wide console. If necessary make your font smaller a couple of times.
+Start the infinite web page.
 
 `
 ./TheInfiniteWebsite.py
 `
 
-Try it connecting with wget from any other host.
+Try it connecting with wget from your host.
 
 `
 wget localhost:8800
@@ -31,4 +34,4 @@ You can change the port where the infinite web site is running by modifying the 
 
 # Screenshots
 
-![Screenshot1](theinfinitewebsite-2.png "Screenshot1")
+![Screenshot1](theinfinitewebsite-1.png "Screenshot1")
