@@ -1,8 +1,10 @@
-# The Infinite Web Server Honeypot
+# The Infinite Web Site Honeypot
 
 This is a quick honeypot web server that delivers an infinite web page to anyone asking **anything** from it. It sends a never ending web page that may fill up the hard disk of the attacker if the download is automatic. Also has some _sticky_ properties to try to capture the browser for as long as possible.
 
 This new version is designed to work as a web LaBrea-style honyepot. So when the attcker connects to your honeypot, you can _stuck_ it to prevent any lateral movement in the network and you can fill the hard disk.
+
+Sending a lot of data to the web clients has several effects depending on the clients. For example nmap stores the responces in memory (as most clients) so actually The Infinite Web Site will fill up all the RAM memory + swap. Becareful when trying.
 
 The new features are:
 - Any web page that you ask for, will end un being infinite.
