@@ -60,8 +60,10 @@ class StreamHandler(http.Request):
         clients[self.client] = newcli
         clients[self.client].y_pos = y_pos
         y_pos += 1
-
-        useragent = http.Request.getAllHeaders(self)['user-agent']
+        try:
+            useragent = http.Request.getAllHeaders(self)['user-agent']
+        except
+            useragent = "Empty"
         # Print
         screen.addstr(clients[self.client].y_pos,0, "Client "+str(self.client.host)+':'+str(self.client.port)+'. '+str(clients[self.client].connectionTime)+' '+str(self.method)+' '+str(self.uri)+' UA: '+useragent)
         #screen.addstr(10,0,http.Request.uri)
