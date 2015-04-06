@@ -79,7 +79,7 @@ class StreamHandler(http.Request):
         y_pos += 1
         try:
             useragent = http.Request.getAllHeaders(self)['user-agent']
-            short_useragent = useragent[0:20]
+            short_useragent = useragent[0:50]
         except:
             useragent = "Empty"
             short_useragent = "Empty"
@@ -100,7 +100,7 @@ class StreamHandler(http.Request):
                     s = "A"*1024
                     newcli.amountTransfered += len(s)
                     # For some reason the connection is not stopped and continues to try to send data
-                    screen.addstr(clients[self.client].y_pos,180, "Data {:>5.3f} MB".format(clients[self.client].amountTransfered/1024/1024.0), curses.color_pair(3))
+                    screen.addstr(clients[self.client].y_pos,140, " Data {:>5.3f} MB".format(clients[self.client].amountTransfered/1024/1024.0)+" Duration "+str(datetime.datetime.now() - clients[self.client].connectionTime), curses.color_pair(2))
                     screen.refresh()
                     try:
                         self.write(s)
@@ -115,15 +115,11 @@ class StreamHandler(http.Request):
     def connectionLost(self,reason):
         global clients
         disconnect_time = datetime.datetime.now()
-        #screen.addstr(clients[http.Request.getClientIP(self)].y_pos,140, "Duration "+str(disconnect_time - clients[http.Request.getClientIP(self)].connectionTime)+'. Total: '+str(clients[http.Request.getClientIP(self)].amountTransfered/1024/1024.0)+' MB')
-        logging.info('Client {}:{}. Finished connection. Total Transfer: {:.3f} MB, Duration: {}'.format(self.client.host, self.client.port, clients[self.client].amountTransfered/1024/1024.0, str(disconnect_time - clients[self.client].connectionTime)))
         try:
-            #logging.info('Client {}:{}. Finished connection. Total Transfer: {}, Duration: {}'.format(self.client.host, self.client.port, str(), clients[self.client].amountTransfered/1024/1024.0),str(disconnect_time - clients[self.client].connectionTime))
-            screen.addstr(clients[self.client].y_pos,200, "Duration "+str(disconnect_time - clients[self.client].connectionTime),curses.color_pair(2) )
-            screen.refresh()
-        except:
-            print
-            print 'The screen is to narrow!! Try decreasing the font size.'
+            logging.info('Client {}:{}. Finished connection. Total Transfer: {:.3f} MB, Duration: {}'.format(self.client.host, self.client.port, clients[self.client].amountTransfered/1024/1024.0, str(disconnect_time - clients[self.client].connectionTime)))
+        except AttributeError:
+            logging.error('The client variable was not available. No more info.')
+            return
         http.Request.notifyFinish(self)
         http.Request.finish(self)
 
