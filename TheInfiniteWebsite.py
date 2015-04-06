@@ -17,7 +17,7 @@ class cli():
         self.y_pos = -1
 
 # Global pos
-y_pos = 0
+y_pos = 1
 clients = {}
 
 # Initialize the curses       
@@ -34,7 +34,8 @@ curses.noecho()
 curses.cbreak()
 new_screen.keypad(1)
 curses.curs_set(0)
-new_screen.addstr(0,0, 'Live Log')
+new_screen.addstr(0,0, 'The Infinite Web Page. Live Log of captured clients.')
+new_screen.refresh()
 screen = new_screen
 
 
