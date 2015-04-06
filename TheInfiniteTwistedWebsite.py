@@ -31,13 +31,14 @@ class Infinite(Resource):
         # New cli object
         newcli = self.cli()
         newcli.connectionTime = datetime.datetime.now()
-        toTransfer = 'A'*1024*1024*1024
+        toTransfer = 'A'*1024
         newcli.amountTransfered = len(toTransfer)
         # Store the cli
         self.clients[request.client] = newcli
         print 'Client connected: {} on {}'.format(request.client, self.clients[request.client].connectionTime)
         # Write some data
-        request.write(toTransfer)
+        for i in range(0,1048576):
+            request.write(toTransfer)
         return NOT_DONE_YET
     
 
