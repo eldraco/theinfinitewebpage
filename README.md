@@ -1,10 +1,11 @@
 # The Infinite Web Server Honeypot
 
-This is a quick honeypot web server that delivers an infinite web page to anyone asking anything from it. It sends a never ending web page that may fill up the hard disk of the attacker if the download is automatic. Also has some _sticky_ properties to try to capture the browser for as long as possible.
+This is a quick honeypot web server that delivers an infinite web page to anyone asking **anything** from it. It sends a never ending web page that may fill up the hard disk of the attacker if the download is automatic. Also has some _sticky_ properties to try to capture the browser for as long as possible.
 
-The new version is designed to work as a web LaBrea honyepot. 
+This new version is designed to work as a web LaBrea-style honyepot. So when the attcker connects to your honeypot, you can _stuck_ it to prevent any lateral movement in the network and you can fill the hard disk.
 
 The new features are:
+- Any web page that you ask for, will end un being infinite.
 - It now uses the twisted libraries, so it supports multiple clients.
 - It uses the curses libraries to show the amount of data transfered in real time.
 - It can recognize GET and POST requests and give them a lot of data while trying to leave them _stuck_.
