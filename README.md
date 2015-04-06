@@ -30,4 +30,4 @@ In a local network is able to send data at ~2.5Mbps
 You can change the port where the infinite web site is running by modifying the code.
 
 # Screenshots
-![Screenshot1](theinfinitewebsite-1.png)
+![](theinfinitewebsite-1.png)
