@@ -3,6 +3,7 @@ from twisted.internet import reactor # drives the whole process, accepting TCP c
 from twisted.internet import defer
 from twisted.web import http
 from twisted.internet import protocol
+from twisted.web.server import NOT_DONE_YET
 
 import datetime
 import curses
@@ -72,21 +73,25 @@ class StreamHandler(http.Request):
         #screen.addstr(13,0,str(self.uri))
         screen.refresh()
 
-        # For HEAD we should do something different because they don't wait for any data.
 
         # For GET and POST it works fine
-        while not http.Request.finished:
-                self.setHeader('Connection', 'Keep-Alive')
-                s = "A"*1024
-                newcli.amountTransfered += len(s)
-                # For some reason the connection is not stopped and continues to try to send data
-                screen.addstr(clients[self.client].y_pos,135, "Transfered {:>5.3f} MB".format(clients[self.client].amountTransfered/1024/1024.0))
-                screen.refresh()
-                try:
-                    self.write(s)
-                    yield wait(0)
-                except:
-                    return
+        if 'GET' in self.method or 'POST' in self.method:
+            while not http.Request.finished:
+                    self.setHeader('Connection', 'Keep-Alive')
+                    s = "A"*1024
+                    newcli.amountTransfered += len(s)
+                    # For some reason the connection is not stopped and continues to try to send data
+                    screen.addstr(clients[self.client].y_pos,135, "Transfered {:>5.3f} MB".format(clients[self.client].amountTransfered/1024/1024.0))
+                    screen.refresh()
+                    try:
+                        self.write(s)
+                        yield wait(0)
+                    except:
+                        return
+        # For HEAD we should do something different because they don't wait for any data.
+        elif 'HEAD' in self.method:
+            self.setHeader('Connection', 'Keep-Alive')
+
 
     def connectionLost(self,reason):
         global clients
